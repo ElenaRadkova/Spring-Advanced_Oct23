@@ -1,0 +1,67 @@
+package bg.softuni.hateoas.web;
+
+import bg.softuni.hateoas.model.dto.StudentDTO;
+import bg.softuni.hateoas.model.mapping.StudentMapper;
+import bg.softuni.hateoas.repository.StudentRepository;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
+@RequestMapping("/students")
+@RestController
+public class StudentsController {
+
+
+    private final StudentRepository studentRepository;
+    private final StudentMapper studentMapper;
+
+
+    public StudentsController(StudentRepository studentRepository, StudentMapper studentMapper) {
+        this.studentRepository = studentRepository;
+        this.studentMapper = studentMapper;
+    }
+
+    @GetMapping
+    public void getStudents(){
+
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<EntityModel<StudentDTO>> getStudentsById(@PathVariable Long studentId){
+        StudentDTO student = studentRepository
+                .findById(studentId)
+                .map(studentMapper::mapEntityDTO)
+                .orElseThrow();
+
+        return ResponseEntity.ok(EntityModel.of(student, createStudentsLinks(student)));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<EntityModel<StudentDTO>> update(@PathVariable Long id, StudentDTO studentDTO) {
+        return ResponseEntity.ok().build();
+    }
+
+    private Link[] createStudentsLinks(StudentDTO studentDTO) {
+        List<Link> result = new ArrayList<>();
+
+        Link selfLink = linkTo(methodOn(StudentsController.class)
+                .getStudentsById(studentDTO.getId()))
+                .withSelfRel();
+        result.add(selfLink);
+
+        Link updateLink = linkTo(methodOn(StudentsController.class)
+                .update(studentDTO.getId(), studentDTO))
+                .withRel("update");
+        //TODO orders
+
+        return result.toArray(new Link[0]);
+    }
+
+}

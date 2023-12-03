@@ -61,6 +61,7 @@ public class StudentsController {
     }
     private OrderDTO map(OrderEntity order) {
         return new OrderDTO()
+                .setId(order.getId())
                 .setStudentId(order.getStudent().getId())
                 .setCourseId(order.getCourse().getId());
     }

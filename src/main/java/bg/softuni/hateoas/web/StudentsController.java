@@ -3,6 +3,7 @@ package bg.softuni.hateoas.web;
 import bg.softuni.hateoas.model.dto.StudentDTO;
 import bg.softuni.hateoas.model.mapping.StudentMapper;
 import bg.softuni.hateoas.repository.StudentRepository;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -29,8 +31,15 @@ public class StudentsController {
     }
 
     @GetMapping
-    public void getStudents(){
+    public ResponseEntity<CollectionModel<EntityModel<StudentDTO>>> getStudents(){
+             List<EntityModel<StudentDTO>> allStudents = studentRepository
+                     .findAll()
+                     .stream()
+                     .map(studentMapper::mapEntityDTO)
+                     .map(dto -> EntityModel.of(dto, createStudentsLinks(dto)))
+                     .collect(Collectors.toList());
 
+             return ResponseEntity.ok(CollectionModel.of(allStudents));
     }
 
     @GetMapping("/{id}")
